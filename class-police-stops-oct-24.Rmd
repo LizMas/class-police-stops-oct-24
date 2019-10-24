@@ -1,0 +1,40 @@
+---
+title: "class-police-stops-oct-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(fs)
+library(raster)
+library(sf)
+library(tidyverse)
+
+download.file("https://stacks.stanford.edu/file/druid:hp256wp2687/hp256wp2687_ct_hartford_2019_08_13.rds", destfile = "hartford.rds")
+
+download.file("https://stacks.stanford.edu/file/druid:hp256wp2687/hp256wp2687_ct_hartford_shapefiles_2019_08_13.tgz", destfile = "shapes_hartford.tgz")
+
+hartford <- read_rds("hartford.rds") %>% filter("Officer_id_hash" == "09739d95d7" & arrest_made == TRUE) %>% dplyr::select(officer_id_hash, arrest_made, lat, lng) %>% drop.na(lat, lng) 
+
+untar("shapes_hartford.tgz")
+shape <- st_read("ct_hartford_shapefiles/Hartford_Neighborhoods.shp")
+
+```
+
+```{r, make tibble}
+
+
+# hartford is a reg tibble but it needs to be an object that will work with a map. Maybe st_as_sf?
+
+locations <- st_as_sf(hartford, coords = c("lat", "lng"), crs = 4326)
+```
+
+
+```{r}
+ggplot(shape) +
+  geom_sf(data = locations) 
+
+
+```
+
